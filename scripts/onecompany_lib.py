@@ -115,7 +115,14 @@ def emergency_stop_active(config: dict[str, Any] | None = None) -> bool:
 
 
 def governance_config() -> dict[str, Any]:
-    return load_json(CONTROL / "governance.json")
+    """Require real target-local governance; absent/malformed policy denies use."""
+    try:
+        value = load_json(CONTROL / "governance.json")
+    except (OSError, ValueError) as exc:
+        raise RuntimeError("governance_policy_missing_or_invalid") from exc
+    if not isinstance(value, dict):
+        raise RuntimeError("governance_policy_missing_or_invalid")
+    return value
 
 
 def path_matches_any(path: str, patterns: list[str]) -> bool:

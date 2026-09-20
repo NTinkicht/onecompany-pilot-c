@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from autonomy_guard import level_violations
-from onecompany_lib import CONTROL, ROOT, load_json
+from onecompany_lib import CONTROL, ROOT, emergency_stop_active, load_json
 
 MECHANISM_ID = "github-actions-fixture-writer"
 WU_PATTERN = re.compile(r"^WU[A-Za-z0-9._-]{1,58}$")
@@ -57,7 +57,8 @@ def preflight(
     if not enabled:
         errors.append("fixture_worker_not_owner_enabled")
     errors.extend(level_violations(config, "implementation", unattended=True))
-    if config.get("safety", {}).get("emergency_stop") is not False:
+    if (config.get("safety", {}).get("emergency_stop") is not False
+            or emergency_stop_active(config)):
         errors.append("emergency_stop_or_unknown")
     configured_repo = config.get("project", {}).get("repository")
     if configured_repo != repository or request.get("repository") != repository:
@@ -204,9 +205,13 @@ def invoke(request: dict[str, Any]) -> dict[str, Any]:
     _cmd("git", "add", "--", relpath)
     if _cmd("git", "diff", "--cached", "--name-only") != relpath:
         raise RuntimeError("fixture_worker_staged_scope_mismatch")
+    if emergency_stop_active(config):
+        raise RuntimeError("fixture_worker_emergency_stop_before_commit")
     _cmd("git", "commit", "-m", f"test-only: exercise unattended {work_unit}")
     commit = _cmd("git", "rev-parse", "HEAD")
     # No --force. A simultaneous writer must not lose its commit.
+    if emergency_stop_active(config):
+        raise RuntimeError("fixture_worker_emergency_stop_before_push")
     _cmd("git", "push", "origin", f"HEAD:refs/heads/{branch}")
     if _live_pr(repository, lease["pr"]).get("head", {}).get("sha") != commit:
         raise RuntimeError("fixture_worker_committed_head_not_observed")

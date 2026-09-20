@@ -19,7 +19,7 @@ import urllib.request
 from typing import Any
 
 from fixture_actions_adapter import fixture_path
-from onecompany_lib import CONTROL, load_json
+from onecompany_lib import CONTROL, emergency_stop_active, load_json
 
 SHA = re.compile(r"^[0-9a-f]{40}$")
 REPO = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -46,11 +46,17 @@ class GitHub:
 
     def call(self, method: str, path: str, payload: dict | None = None) -> Any:
         """Call the repository-scoped REST API without disclosing response secrets."""
-        if not path.startswith("/") or "://" in path:
+        if (not path.startswith("/") or "://" in path
+                or (path == "/" and method != "GET")):
             raise Refused("invalid_api_path")
+        if method != "GET" and emergency_stop_active():
+            raise Refused("out_of_band_emergency_stop_active")
+        # GET / is the canonical repository metadata endpoint. GitHub REST
+        # does not guarantee that a trailing slash resolves the same route.
+        endpoint = "" if path == "/" else path
         data = None if payload is None else json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
-            "https://api.github.com/repos/" + self.repository + path,
+            "https://api.github.com/repos/" + self.repository + endpoint,
             data=data,
             method=method,
             headers={
@@ -102,7 +108,8 @@ def preflight(
         errors.append("unattended_fixture_producer_disabled")
     if config.get("autonomy", {}).get("level") not in {"L2", "L3", "L4", "L5"}:
         errors.append("project_l2_approval_missing")
-    if config.get("safety", {}).get("emergency_stop") is not False:
+    if (config.get("safety", {}).get("emergency_stop") is not False
+            or emergency_stop_active(config)):
         errors.append("emergency_stop_or_unknown")
     costs = budget.get("ai", {})
     ci = budget.get("ci", {})
