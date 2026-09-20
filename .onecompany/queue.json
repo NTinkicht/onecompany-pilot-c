@@ -6,7 +6,7 @@
       "status": "READY",
       "risk_class": "LOW",
       "branch": "onecompany-a4-wu-c2",
-      "pr": 4,
+      "pr": 5,
       "dependencies": [],
       "write_scope": [
         "docs/onecompany-fixture/WU-C2.md"
