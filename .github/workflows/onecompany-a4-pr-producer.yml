@@ -1,0 +1,48 @@
+# DISABLED TEMPLATE: install ONLY in an independently authorized disposable
+# project with an L2 policy, project-local verified actor and included runner.
+# Never auto-enable this in the generic OneCompany source repository.
+name: OneCompany A4 First-PR Producer (disposable pilot)
+
+on:
+  repository_dispatch:
+    types: [onecompany.a4-produce]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: a4-producer-${{ github.event.client_payload.work_unit || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  bounded-first-pr:
+    # This guard runs BEFORE GitHub assigns a hosted runner; Python checks
+    # alone would be too late to prevent private-repo overage billing.
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.private == false &&
+      vars.ONECOMPANY_A4_PRODUCER_ENABLED == 'true' &&
+      vars.ONECOMPANY_A4_APPROVED_DISPATCHER != '' &&
+      vars.ONECOMPANY_A4_LOGICAL_ACTOR != '' &&
+      github.actor == vars.ONECOMPANY_A4_APPROVED_DISPATCHER &&
+      github.event.client_payload.actor == vars.ONECOMPANY_A4_LOGICAL_ACTOR
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out trusted project default branch (not event payload)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Set up included Python runtime
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Reserve one branch and create or reconcile one fixture PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONECOMPANY_A4_PRODUCER_ENABLED: ${{ vars.ONECOMPANY_A4_PRODUCER_ENABLED }}
+          A4_WORK_UNIT: ${{ github.event.client_payload.work_unit }}
+          A4_ACTOR: ${{ github.event.client_payload.actor }}
+        run: python scripts/a4_pr_producer.py

@@ -1,0 +1,55 @@
+# DISABLED TEMPLATE: install ONLY on an approved PUBLIC disposable target.
+# This workflow deliberately fails on the initial A4 claim and succeeds only
+# after an exact one-file repair on the same existing canonical PR.
+name: OneCompany L2 Fixture CI (disposable pilot)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-fixture:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out the exact dispatched candidate head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate one bounded repaired fixture
+        env:
+          PILOT_REPO: ${{ github.repository }}
+          PILOT_HEAD: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os, re, subprocess
+          from pathlib import Path
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"],
+                                        text=True).strip()
+          if sha != os.environ["PILOT_HEAD"]:
+              raise SystemExit("wrong_dispatched_head")
+          names = subprocess.check_output(
+              ["git", "diff", "--name-only", "HEAD~1", "HEAD"],
+              text=True,
+          ).splitlines()
+          if len(names) != 1 or not re.fullmatch(
+              r"docs/onecompany-fixture/WU[A-Za-z0-9._-]{1,58}\.md",
+              names[0],
+          ):
+              raise SystemExit("fixture_only_diff_required")
+          content = Path(names[0]).read_text(encoding="utf-8")
+          if (not content.startswith(
+              "# OneCompany A4 isolated claim and implementation fixture\n\n"
+              f"Repository: {os.environ['PILOT_REPO']}\n"
+              f"Work Unit: {Path(names[0]).stem}\n"
+          ):
+              raise SystemExit("fixture_provenance_invalid")
+          if not content.endswith("Repair: complete\n"):
+              print("L2_FIXTURE_INTENTIONAL_FAILURE:fixture_ci_repair_not_complete",
+                    flush=True)
+              raise SystemExit("fixture_ci_repair_not_complete")
+          PY

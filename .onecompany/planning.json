@@ -1,0 +1,74 @@
+{
+  "$schema": "./schemas/planning.schema.json",
+  "schema_version": "1.0",
+  "source_of_truth": {
+    "approved_baseline": "versioned_control_plane",
+    "github_issues_are_collaboration_surface": true,
+    "issue_edits_do_not_auto_baseline": true,
+    "reconciliation_required": true
+  },
+  "work_model": {
+    "entity_types": ["OBJECTIVE", "EPIC", "FEATURE", "CAPABILITY", "USER_STORY", "MILESTONE", "RELEASE"],
+    "execution_item_types": ["DELIVERY", "TASK", "ENABLER", "SPIKE", "DEFECT", "CHORE"],
+    "relationship_types": ["contains", "decomposes_to", "traces_to", "realizes", "satisfies", "implements", "depends_on", "blocks", "scheduled_for", "targets", "delivers", "releases", "verifies", "mitigates", "relates_to", "informs"],
+    "optional_layers": ["FEATURE", "CAPABILITY", "USER_STORY"],
+    "execution_contract": "WORK_UNIT",
+    "requirements_are_canonical_in": ".onecompany/requirements-catalog.json",
+    "acceptance_criteria_are_canonical_in": ".onecompany/requirements-catalog.json",
+    "risks_are_canonical_in": ".onecompany/risk-register.json"
+  },
+  "planning_horizons": {
+    "strategy": "objectives and measurable outcomes",
+    "roadmap": "epics/features/capabilities and milestones",
+    "delivery": "requirements, work units, dependencies and releases",
+    "now_next_later_supported": true
+  },
+  "prioritization": {
+    "method": "confidence_weighted_cost_of_delay_over_job_size",
+    "weights": {"business_value": 1.0, "time_criticality": 1.0, "risk_reduction": 1.0, "dependency_unlock": 1.0},
+    "score_inputs_range": [0, 100],
+    "higher_score_first": true,
+    "estimates_are_forecasts_not_commitments": true,
+    "tie_breakers": ["critical_path", "higher_static_priority", "smaller_job_size", "stable_id"]
+  },
+  "estimation": {
+    "default_unit": "relative_points",
+    "require_confidence": true,
+    "require_range_for_high_uncertainty": true,
+    "discovery_when_uncertainty_is_material": true
+  },
+  "traceability": {
+    "ready_work_requires_parent_or_requirement": true,
+    "require_bidirectional_links": true,
+    "require_requirement_to_acceptance_to_work_to_evidence": true,
+    "release_must_trace_to_delivered_work": true,
+    "outcome_review_after_release": true
+  },
+  "parallel_execution": {
+    "enabled": true,
+    "max_concurrent_implementation_streams": 4,
+    "one_implementation_lease_per_work_unit": true,
+    "require_write_scope_for_parallel": true,
+    "unknown_scope_behavior": "serialize",
+    "critical_risk_default": "serialize",
+    "resource_locking": true,
+    "conflict_policy": "fail_closed"
+  },
+  "flow": {
+    "wip_is_global_capacity_not_a_global_single_stream": true,
+    "prefer_finish_over_start": true,
+    "blocked_work_must_name_owner_and_unblock_condition": true,
+    "recompute_after_dependency_or_merge_event": true,
+    "measure": ["lead_time", "cycle_time", "blocked_time", "throughput", "wip", "rework", "escaped_defects", "forecast_error"]
+  },
+  "automation": {
+    "event_driven_first": true,
+    "reconcile_before_mutation": true,
+    "may_recompute_priority": true,
+    "may_compute_parallel_set": true,
+    "may_suggest_decomposition": true,
+    "may_not_rewrite_product_intent": true,
+    "may_not_accept_risk": true,
+    "may_not_relax_requirements": true
+  }
+}

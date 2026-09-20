@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "work_units": [
+    {
+      "id": "WU-C",
+      "status": "READY",
+      "risk_class": "LOW",
+      "branch": "onecompany-a4-wu-c",
+      "pr": 3,
+      "dependencies": [],
+      "write_scope": [
+        "docs/onecompany-fixture/WU-C.md"
+      ]
+    }
+  ]
+}
