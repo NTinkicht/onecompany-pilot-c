@@ -10,14 +10,21 @@
       ],
       "temporarily_unavailable_capabilities": [],
       "repository_access": {
-        "write": true
+        "write": true,
+        "read": true
       },
       "unattended": {
-        "verified": true
+        "verified": true,
+        "configured": true
       },
       "capacity": {
         "measured": true,
-        "implementation_streams": 1
+        "implementation_streams": 1,
+        "observed_at": "2026-09-20T11:51:57Z",
+        "evidence": [
+          "https://github.com/NTinkicht/onecompany-pilot-c/actions/runs/35509002954 (GitHub-hosted public-repository included runner, exact-head checkout and executed fixture validation; one observed available stream)",
+          "https://github.com/NTinkicht/onecompany-pilot-c/actions/runs/35509002954/job/106073529001 (successful checkout step with repository Contents:read; named intentional fixture validation then failed as designed)"
+        ]
       }
     }
   ]
