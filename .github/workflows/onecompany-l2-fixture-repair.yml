@@ -1,0 +1,63 @@
+# DISABLED TEMPLATE: only for a separately approved PUBLIC disposable target.
+# A failing exact-head fixture CI run is necessary but never sufficient:
+# scripts/l2_fixture_repair.py independently rechecks all authority and scope.
+name: OneCompany L2 Same-PR Repair (disposable pilot)
+on:
+  workflow_dispatch:
+    inputs:
+      work_unit:
+        required: true
+        type: string
+      actor:
+        required: true
+        type: string
+      pr_number:
+        required: true
+        type: string
+      initial_head:
+        required: true
+        type: string
+      failed_run_id:
+        required: true
+        type: string
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+  issues: read
+concurrency:
+  group: l2-repair-${{ github.event.inputs.work_unit || github.run_id }}
+  cancel-in-progress: false
+jobs:
+  repair:
+    # Evaluated BEFORE hosted runner allocation; no private-repo overage.
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.private == false &&
+      vars.ONECOMPANY_L2_FIXTURE_REPAIR_ENABLED == 'true' &&
+      vars.ONECOMPANY_A4_APPROVED_DISPATCHER != '' &&
+      vars.ONECOMPANY_A4_LOGICAL_ACTOR != '' &&
+      github.actor == vars.ONECOMPANY_A4_APPROVED_DISPATCHER &&
+      github.event.inputs.actor == vars.ONECOMPANY_A4_LOGICAL_ACTOR
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out trusted disposable project default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Set up included Python runtime
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Repair exact failed fixture CI on same canonical PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ONECOMPANY_L2_FIXTURE_REPAIR_ENABLED: ${{ vars.ONECOMPANY_L2_FIXTURE_REPAIR_ENABLED }}
+          A4_WORK_UNIT: ${{ github.event.inputs.work_unit }}
+          A4_ACTOR: ${{ github.event.inputs.actor }}
+          L2_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          L2_INITIAL_HEAD: ${{ github.event.inputs.initial_head }}
+          L2_FAILED_RUN_ID: ${{ github.event.inputs.failed_run_id }}
+        run: python scripts/l2_fixture_repair.py

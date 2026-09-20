@@ -1,0 +1,31 @@
+{
+  "$schema": "./schemas/budget.schema.json",
+  "schema_version": "1.0",
+  "currency": "USD",
+  "ai": {
+    "additional_monthly_spend_cap": 0,
+    "allow_paid_fallback": false,
+    "allow_overage": false,
+    "allow_auto_topup": false,
+    "allow_new_paid_vendor": false,
+    "unknown_cost_behavior": "forbid"
+  },
+  "ci": {
+    "runner_cost_policy": "included_or_free_only",
+    "allow_high_frequency_scheduled_watchdogs": false
+  },
+  "cost_classes": {
+    "allowed": [
+      "HUMAN",
+      "INCLUDED_SUBSCRIPTION",
+      "FREE_ALLOWANCE",
+      "LOCAL"
+    ],
+    "conditionally_allowed": [],
+    "forbidden": [
+      "METERED_ALLOWED",
+      "METERED_FORBIDDEN",
+      "UNKNOWN_COST"
+    ]
+  }
+}

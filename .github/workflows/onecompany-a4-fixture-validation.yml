@@ -1,0 +1,60 @@
+# DISABLED INSTALLATION TEMPLATE. Only for independently authorized PUBLIC
+# disposable repositories on included/free GitHub-hosted runner capacity.
+# Install unchanged as .github/workflows/onecompany-a4-fixture-validation.yml.
+# This exact blob is pinned by scripts/a4_qualify.py.
+name: OneCompany A4 Fixture Validation (public disposable only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-fixture:
+    if: >-
+      github.event.repository.visibility == 'public' &&
+      github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out the exact dispatched fixture head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require one fixture-only commit with valid provenance
+        env:
+          A4_DISPATCH_HEAD: ${{ github.sha }}
+          A4_REPOSITORY: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          head = os.environ["A4_DISPATCH_HEAD"]
+          repo = os.environ["A4_REPOSITORY"]
+          if subprocess.check_output(
+              ["git", "rev-parse", "HEAD"], text=True
+          ).strip() != head:
+              raise SystemExit("trusted_dispatched_head_mismatch")
+          names = subprocess.check_output(
+              ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
+              text=True,
+          ).splitlines()
+          if len(names) != 1:
+              raise SystemExit("fixture_only_diff_required")
+          name = names[0]
+          if not re.fullmatch(r"docs/onecompany-fixture/WU-[A-Za-z0-9-]+\.md", name):
+              raise SystemExit("wrong_fixture_path")
+          wu = Path(name).stem
+          actual = Path(name).read_text(encoding="utf-8")
+          if not actual.startswith(
+              "# OneCompany A4 isolated claim and implementation fixture\n\n"
+              f"Repository: {repo}\nWork Unit: {wu}\n"
+          ) or "Base SHA: " not in actual:
+              raise SystemExit("fixture_provenance_missing")
+          PY

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "actors": [
+    {
+      "actor_id": "fixture-bot",
+      "mechanisms": [
+        {
+          "id": "github-actions-a4-pr-producer",
+          "kind": "github_action",
+          "configured": true,
+          "unattended": true,
+          "capabilities": [
+            "implementation"
+          ]
+        },
+        {
+          "id": "github-actions-l2-fixture-repair",
+          "kind": "github_action",
+          "configured": true,
+          "unattended": true,
+          "capabilities": [
+            "ci_remediation"
+          ]
+        }
+      ]
+    }
+  ]
+}

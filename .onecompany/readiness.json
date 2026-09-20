@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "actors": [
+    {
+      "actor_id": "fixture-bot",
+      "setup_state": "ready",
+      "verified_capabilities": [
+        "implementation",
+        "ci_remediation"
+      ],
+      "temporarily_unavailable_capabilities": [],
+      "repository_access": {
+        "write": true
+      },
+      "unattended": {
+        "verified": true
+      },
+      "capacity": {
+        "measured": true,
+        "implementation_streams": 1
+      }
+    }
+  ]
+}

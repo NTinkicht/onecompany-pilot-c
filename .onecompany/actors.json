@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "actors": [
+    {
+      "id": "fixture-bot",
+      "display_name": "OneCompany fixture-only GitHub Actions remediation bot",
+      "enabled": true,
+      "configured": true,
+      "cost_class": "FREE_ALLOWANCE",
+      "execution_modes": [
+        "github_action"
+      ],
+      "capabilities": [
+        "implementation",
+        "ci_remediation"
+      ],
+      "may_independently_gate_own_material_authorship": false
+    }
+  ]
+}
