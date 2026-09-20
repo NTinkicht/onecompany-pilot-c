@@ -46,6 +46,7 @@ jobs:
               "# OneCompany A4 isolated claim and implementation fixture\n\n"
               f"Repository: {os.environ['PILOT_REPO']}\n"
               f"Work Unit: {Path(names[0]).stem}\n"
+          )
           ):
               raise SystemExit("fixture_provenance_invalid")
           if not content.endswith("Repair: complete\n"):

@@ -2,14 +2,14 @@
   "schema_version": "1.0",
   "work_units": [
     {
-      "id": "WU-C3",
+      "id": "WU-C4",
       "status": "READY",
       "risk_class": "LOW",
-      "branch": "onecompany-a4-wu-c3",
-      "pr": 5,
+      "branch": "onecompany-a4-wu-c4",
+      "pr": 7,
       "dependencies": [],
       "write_scope": [
-        "docs/onecompany-fixture/WU-C3.md"
+        "docs/onecompany-fixture/WU-C4.md"
       ]
     }
   ]
