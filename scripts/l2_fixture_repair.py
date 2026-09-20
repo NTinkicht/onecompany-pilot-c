@@ -28,7 +28,7 @@ REPAIR_STEP = "Repair exact failed fixture CI on same canonical PR"
 CI_JOB = "validate-fixture"
 CI_STEP = "Validate one bounded repaired fixture"
 FAILURE_MARKER = "L2_FIXTURE_INTENTIONAL_FAILURE:fixture_ci_repair_not_complete"
-CI_BLOB = "cea82d19270270fc4bc5350ed48e3dbdd1c31744"
+CI_BLOB = "9af08865958561dcd6f124b4dc91368d38fec049"
 REPAIR_LINE = "Repair: complete\n"
 EVIDENCE_PREFIX = "L2_REPAIR_EVIDENCE:"
 
